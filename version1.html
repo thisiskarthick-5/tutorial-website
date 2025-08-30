@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn Python</title>
+    <!-- Pyodide CDN for running Python in the browser -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
     <style>
         /* Basic Setup */
         :root {
@@ -215,9 +217,18 @@
         .topic-explanation h2 {
             margin-bottom: 1rem;
         }
-        .topic-explanation p {
+        .topic-explanation p, .topic-explanation ul {
             margin-bottom: 1rem;
         }
+        .topic-explanation ul {
+            padding-left: 20px;
+        }
+        .topic-explanation code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
 
         /* Code Editor */
         .code-editor-container {
@@ -269,6 +280,10 @@
 
         #run-btn:hover {
             background-color: #27ae60;
+        }
+        #run-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
 
         .output {
@@ -527,29 +542,28 @@
                     <h3>Basics</h3>
                     <ul>
                         <li><a href="#" class="topic-link active-topic" data-topic="intro">Introduction</a></li>
+                        <li><a href="#" class="topic-link" data-topic="syntax">Syntax</a></li>
+                        <li><a href="#" class="topic-link" data-topic="comments">Comments</a></li>
                         <li><a href="#" class="topic-link" data-topic="variables">Variables</a></li>
                         <li><a href="#" class="topic-link" data-topic="datatypes">Data Types</a></li>
+                        <li><a href="#" class="topic-link" data-topic="numbers">Numbers</a></li>
+                        <li><a href="#" class="topic-link" data-topic="strings">Strings</a></li>
+                    </ul>
+                    <h3>Control Flow</h3>
+                     <ul>
+                        <li><a href="#" class="topic-link" data-topic="ifelse">If...Else</a></li>
+                        <li><a href="#" class="topic-link" data-topic="forloops">For Loops</a></li>
                     </ul>
                     <h3>Data Structures</h3>
                     <ul>
                         <li><a href="#" class="topic-link" data-topic="lists">Lists</a></li>
-                        <li><a href="#">Tuples</a></li>
-                        <li><a href="#">Dictionaries</a></li>
+                        <li><a href="#" class="topic-link" data-topic="tuples">Tuples</a></li>
+                        <li><a href="#" class="topic-link" data-topic="dictionaries">Dictionaries</a></li>
                     </ul>
                     <h3>Functions</h3>
                     <ul>
-                        <li><a href="#">Defining Functions</a></li>
-                        <li><a href="#">Arguments</a></li>
-                    </ul>
-                    <h3>Advanced Python</h3>
-                    <ul>
-                        <li><a href="#">Classes and Objects</a></li>
-                    </ul>
-                    <h3>Libraries</h3>
-                    <ul>
-                        <li><a href="#">NumPy</a></li>
-                        <li><a href="#">Pandas</a></li>
-                        <li><a href="#">Scikit-Learn</a></li>
+                        <li><a href="#" class="topic-link" data-topic="functions">Defining Functions</a></li>
+                        <li><a href="#" class="topic-link" data-topic="arguments">Arguments</a></li>
                     </ul>
                 </aside>
                 <div class="main-content">
@@ -563,7 +577,7 @@
                                 <span>Python Terminal</span>
                             </div>
                             <textarea id="code-input" spellcheck="false"></textarea>
-                            <button id="run-btn">Run</button>
+                            <button id="run-btn" disabled>Loading Python...</button>
                             <div class="output">
                                 <pre id="code-output"></pre>
                             </div>
@@ -630,12 +644,22 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- DATA FOR TUTORIALS ---
+        // --- DATA FOR TUTORIALS (EXPANDED) ---
         const tutorialContent = {
             intro: {
                 title: "Introduction to Python",
                 explanation: `<p>Python is a high-level, interpreted, interactive and object-oriented scripting language. Python is designed to be highly readable.</p><p>It uses English keywords frequently where other languages use punctuation, and it has fewer syntactical constructions than other languages.</p><p>This is the classic "Hello, World!" program:</p>`,
                 code: `print("Hello, World!")`
+            },
+            syntax: {
+                title: "Python Syntax",
+                explanation: `<p>Python was designed for readability. Unlike many other languages that use semicolons or parentheses to complete commands, Python uses new lines.</p><p>Python also relies heavily on <strong>indentation</strong> (whitespace at the beginning of a line) to define scope, such as the scope of loops, functions, and classes. A code block that is not indented correctly will cause an error.</p>`,
+                code: `if 5 > 2:\n  print("Five is greater than two!")`
+            },
+            comments: {
+                title: "Python Comments",
+                explanation: `<p>Comments can be used to explain Python code, to make the code more readable, or to prevent execution when testing code.</p><p>Comments start with a <code>#</code>, and Python will ignore them:</p>`,
+                code: `# This is a comment\nprint("Hello from the other side!")`
             },
             variables: {
                 title: "Python Variables",
@@ -644,19 +668,81 @@
             },
             datatypes: {
                 title: "Python Data Types",
-                explanation: `<p>Variables can store data of different types. Python has the following data types built-in by default:</p><ul><li>Text Type: <code>str</code></li><li>Numeric Types: <code>int</code>, <code>float</code>, <code>complex</code></li><li>Sequence Types: <code>list</code>, <code>tuple</code>, <code>range</code></li></ul><p>You can get the data type of any object by using the <code>type()</code> function.</p>`,
+                explanation: `<p>Variables can store data of different types. Python has the following data types built-in by default:</p><ul><li>Text Type: <code>str</code></li><li>Numeric Types: <code>int</code>, <code>float</code>, <code>complex</code></li><li>Sequence Types: <code>list</code>, <code>tuple</code></li><li>Mapping Type: <code>dict</code></li></ul><p>You can get the data type of any object by using the <code>type()</code> function.</p>`,
                 code: `x = 5\nprint(type(x))\ny = "Hello"\nprint(type(y))`
+            },
+            numbers: {
+                title: "Python Numbers",
+                explanation: `<p>There are three numeric types in Python: <code>int</code>, <code>float</code>, and <code>complex</code>.</p><ul><li><code>int</code>: A whole number, positive or negative, without decimals.</li><li><code>float</code>: A number, positive or negative, containing one or more decimals.</li><li><code>complex</code>: Numbers with a real and imaginary part.</li></ul>`,
+                code: `x = 1    # int\ny = 2.8  # float\nz = 1j   # complex\n\nprint(type(x))\nprint(type(y))\nprint(type(z))`
+            },
+            strings: {
+                title: "Python Strings",
+                explanation: `<p>Strings in python are surrounded by either single quotation marks, or double quotation marks.</p><p>You can get the character at a specific position (indexing) by referring to the index number inside square brackets <code>[]</code>.</p>`,
+                code: `a = "Hello, World!"\nprint(a[1]) # prints 'e'`
+            },
+            ifelse: {
+                title: "Python If...Else",
+                explanation: `<p>Python supports the usual logical conditions from mathematics: Equals (<code>a == b</code>), Not Equals (<code>a != b</code>), Less than (<code>a < b</code>), etc.</p><p>These conditions can be used in several ways, most commonly in "if statements" and loops. An "if statement" is written by using the <code>if</code> keyword.</p>`,
+                code: `a = 200\nb = 33\nif b > a:\n  print("b is greater than a")\nelif a == b:\n  print("a and b are equal")\nelse:\n  print("a is greater than b")`
+            },
+            forloops: {
+                title: "Python For Loops",
+                explanation: `<p>A <code>for</code> loop is used for iterating over a sequence (that is either a list, a tuple, a dictionary, a set, or a string).</p><p>With the for loop we can execute a set of statements, once for each item in a list, tuple, set etc.</p>`,
+                code: `fruits = ["apple", "banana", "cherry"]\nfor x in fruits:\n  print(x)`
             },
             lists: {
                 title: "Python Lists",
                 explanation: `<p>Lists are used to store multiple items in a single variable. Lists are created using square brackets.</p><p>List items are ordered, changeable, and allow duplicate values.</p>`,
                 code: `my_list = ["apple", "banana", "cherry"]\nprint(my_list)\nprint(my_list[1]) # Access item by index`
+            },
+            tuples: {
+                title: "Python Tuples",
+                explanation: `<p>A tuple is a collection which is <strong>ordered</strong> and <strong>unchangeable</strong>. In Python tuples are written with round brackets.</p><p>Once a tuple is created, you cannot change its values. Tuples are unchangeable, or immutable as it also is called.</p>`,
+                code: `my_tuple = ("apple", "banana", "cherry")\nprint(my_tuple)\nprint(my_tuple[0])`
+            },
+            dictionaries: {
+                title: "Python Dictionaries",
+                explanation: `<p>Dictionaries are used to store data values in <code>key:value</code> pairs. A dictionary is a collection which is ordered, changeable and does not allow duplicate keys.</p><p>Dictionaries are written with curly brackets <code>{}</code>.</p>`,
+                code: `thisdict = {\n  "brand": "Ford",\n  "model": "Mustang",\n  "year": 1964\n}\nprint(thisdict["model"])`
+            },
+            functions: {
+                title: "Defining Functions",
+                explanation: `<p>A function is a block of code which only runs when it is called. You can pass data, known as parameters, into a function.</p><p>In Python, a function is defined using the <code>def</code> keyword.</p>`,
+                code: `def my_function():\n  print("Hello from a function")\n\nmy_function()`
+            },
+            arguments: {
+                title: "Function Arguments",
+                explanation: `<p>Information can be passed into functions as arguments. Arguments are specified after the function name, inside the parentheses.</p><p>You can add as many arguments as you want, just separate them with a comma.</p>`,
+                code: `def my_function(fname):\n  print(fname + " Refsnes")\n\nmy_function("Emil")`
             }
         };
 
         const topicExplanationContainer = document.querySelector('.topic-explanation');
         const codeInput = document.getElementById('code-input');
+        const runBtn = document.getElementById('run-btn');
+        const codeOutput = document.getElementById('code-output');
+
+        let pyodide;
         
+        // --- PYODIDE INITIALIZATION ---
+        async function initializePyodide() {
+            try {
+                pyodide = await loadPyodide();
+                console.log("Pyodide is ready.");
+                runBtn.disabled = false;
+                runBtn.textContent = 'Run';
+                codeOutput.textContent = 'Python engine loaded. You can now run code.';
+            } catch (error) {
+                console.error("Pyodide loading failed:", error);
+                runBtn.textContent = 'Error Loading';
+                codeOutput.textContent = 'Failed to load the Python interpreter.';
+            }
+        }
+
+        initializePyodide();
+
+        // --- CORE FUNCTIONS ---
         function loadTopicContent(topicKey) {
             const topic = tutorialContent[topicKey];
             if (!topic) return;
@@ -702,7 +788,6 @@
         const ctaButton = document.querySelector('.cta-button');
         if(ctaButton){
             ctaButton.addEventListener('click', () => {
-                // Find and click the 'Tutorial' nav item
                 document.querySelector('.nav-item[href="#tutorial"]').click();
             });
         }
@@ -720,16 +805,38 @@
         });
 
         // "Try it Yourself" Code Runner
-        const runBtn = document.getElementById('run-btn');
-        const codeOutput = document.getElementById('code-output');
-
         if(runBtn) {
-            runBtn.addEventListener('click', () => {
-                // This is a mock runner for demonstration purposes.
-                // A real implementation would need a secure backend service (e.g., using Docker containers) to execute code.
-                codeOutput.textContent = `> Running code...\n\n(Note: This is a simulated output for UI demonstration.)\n\nYour code would produce:\n"${codeInput.value.replace(/\n/g, '\\n')}"`;
+            runBtn.addEventListener('click', async () => {
+                if (!pyodide) {
+                    codeOutput.textContent = "Python interpreter is not ready.";
+                    return;
+                }
+                const pythonCode = codeInput.value;
+                codeOutput.textContent = "Running...";
+                try {
+                    // Redirect stdout to capture print statements
+                    pyodide.globals.set("stdout_capture", "");
+                    await pyodide.runPythonAsync(`
+                        import sys
+                        import io
+                        sys.stdout = io.StringIO()
+                    `);
+
+                    let result = await pyodide.runPythonAsync(pythonCode);
+                    let stdout = pyodide.runPython("sys.stdout.getvalue()");
+                    
+                    let output = stdout;
+                    if (result !== undefined) {
+                        output += `\n(Return value: ${result})`;
+                    }
+
+                    codeOutput.textContent = output.trim() || "(No output)";
+                } catch (err) {
+                    codeOutput.textContent = `Error: ${err.message}`;
+                }
             });
         }
+
 
         // Quiz Submission
         const submitQuizBtn = document.getElementById('submit-quiz');
@@ -749,7 +856,6 @@
         }
         
         // --- INITIALIZATION ---
-        // Load the initial tutorial content
         loadTopicContent('intro');
 
     });
