@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Python</title>
+    <!-- Pyodide CDN for running Python in the browser -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <style>
+        /* Basic Setup */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --header-bg: #fff;
+            --card-bg: #fff;
+            --border-color: #bdc3c7;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3498db;
+            --secondary-color: #27ae60;
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --header-bg: #34495e;
+            --card-bg: #34495e;
+            --border-color: #7f8c8d;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Header and Navbar */
+        header { position: sticky; top: 0; z-index: 1000; }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--header-bg);
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s;
+        }
+
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 40px; margin-right: 10px; }
+        .logo a { font-size: 1.5rem; font-weight: bold; text-decoration: none; color: var(--text-color); }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 1rem;
+            padding-bottom: 5px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+
+        /* Page Transitions */
+        .page { display: none; padding: 2rem; animation: fadeIn 0.5s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Homepage Hero Section */
+        .hero { text-align: center; padding: 4rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
+        .hero-logo { max-width: 150px; margin-bottom: 1rem; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem auto; }
+        .cta-button { background-color: var(--primary-color); color: white; border: none; padding: 1rem 2rem; font-size: 1.2rem; border-radius: 5px; cursor: pointer; transition: background-color 0.3s, transform 0.3s; }
+        .cta-button:hover { background-color: #2980b9; transform: translateY(-2px); }
+
+        /* Tutorial Layout */
+        .tutorial-layout { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; max-width: 1400px; margin: 0 auto; }
+        .side-nav { background-color: var(--card-bg); padding: 1rem; border-radius: 5px; box-shadow: var(--shadow); height: fit-content; position: sticky; top: 100px; }
+        .side-nav h3 { color: var(--primary-color); margin-top: 1rem; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .side-nav h3:first-child { margin-top: 0; }
+        .side-nav ul { list-style: none; }
+        .side-nav ul li a { display: block; padding: 0.5rem; text-decoration: none; color: var(--text-color); border-radius: 5px; transition: background-color 0.3s, color 0.3s; }
+        .side-nav ul li a:hover, .side-nav ul li a.active-topic { background-color: var(--primary-color); color: #fff; }
+
+        .main-content { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        .topic-explanation { background-color: var(--card-bg); padding: 2rem; border-radius: 5px; box-shadow: var(--shadow); }
+        .topic-explanation h2 { margin-bottom: 1rem; }
+        .topic-explanation p, .topic-explanation ul { margin-bottom: 1rem; }
+        .topic-explanation ul { padding-left: 20px; }
+        .topic-explanation code { background-color: rgba(0,0,0,0.2); padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', Courier, monospace; }
+
+        /* Monaco Code Editor */
+        .code-editor-container { background-color: var(--card-bg); padding: 1rem; border-radius: 5px; box-shadow: var(--shadow); min-height: 450px; display: flex; flex-direction: column; }
+        #monaco-editor { flex-grow: 1; border: 1px solid var(--border-color); border-radius: 5px; }
+        .editor-controls { display: flex; justify-content: flex-end; align-items: center; margin-top: 1rem; }
+        #run-btn { background-color: var(--secondary-color); color: white; border: none; padding: 0.7rem 1.5rem; font-size: 1rem; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        #run-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        .output { margin-top: 1rem; background-color: #1e1e1e; color: #d4d4d4; padding: 0.8rem; border-radius: 5px; min-height: 80px; }
+        .output pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace; }
+
+        /* Practice Zone & Quiz */
+        .practice-zone h2, .quiz-container h2 { text-align: center; font-size: 2rem; margin-bottom: 1rem; }
+        .challenge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        .challenge-card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: var(--shadow); transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; }
+        .challenge-card:hover { transform: translateY(-5px); box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); }
+        .difficulty { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; color: #fff; margin-bottom: 1rem; align-self: flex-start; }
+        .difficulty.easy { background-color: #2ecc71; } .difficulty.medium { background-color: #f39c12; }
+        .solve-btn { background-color: var(--primary-color); color: white; border: none; padding: 0.7rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; align-self: flex-end; }
+        .quiz-container { max-width: 800px; margin: auto; background: var(--card-bg); padding: 2rem; border-radius: 8px; box-shadow: var(--shadow); }
+        
+        /* Dark Mode Toggle */
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 50px; }
+        .theme-switch input { display:none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+
+        /* Hamburger Menu for Mobile */
+        .hamburger { display: none; cursor: pointer; }
+        .hamburger div { width: 25px; height: 3px; background-color: var(--text-color); margin: 5px 0; transition: 0.4s; }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .tutorial-layout { grid-template-columns: 1fr; }
+            .side-nav { position: static; margin-bottom: 2rem; width: 100%; }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { flex-wrap: wrap; justify-content: space-between; }
+            .nav-links { display: none; flex-direction: column; width: 100%; text-align: center; order: 3; margin-top: 1rem; }
+            .nav-links.active { display: flex; }
+            .nav-links a { width: 100%; padding: 1rem; border-top: 1px solid var(--border-color); }
+            .theme-switch-wrapper { order: 2; }
+            .hamburger { display: block; order: 2; margin-left: 1rem; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo">
+                <a href="#">Learn Python</a>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="nav-item active">Home</a>
+                <a href="#tutorial" class="nav-item">Tutorial</a>
+                <a href="#practice" class="nav-item">Practice Zone</a>
+                <a href="#quiz" class="nav-item">Quizzes</a>
+            </div>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Homepage Section -->
+        <section id="home" class="page active">
+            <div class="hero">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo" class="hero-logo">
+                <h1>Welcome to Interactive Python Learning</h1>
+                <p>Your journey to mastering Python starts here. Learn by doing with our hands-on tutorials and challenges.</p>
+                <button class="cta-button">Start Learning</button>
+            </div>
+        </section>
+
+        <!-- Tutorial Section -->
+        <section id="tutorial" class="page">
+            <div class="tutorial-layout">
+                <aside class="side-nav">
+                    <h3>Basics</h3>
+                    <ul>
+                        <li><a href="#" class="topic-link active-topic" data-topic="intro">Introduction</a></li>
+                        <li><a href="#" class="topic-link" data-topic="syntax">Syntax</a></li>
+                        <li><a href="#" class="topic-link" data-topic="comments">Comments</a></li>
+                        <li><a href="#" class="topic-link" data-topic="variables">Variables</a></li>
+                        <li><a href="#" class="topic-link" data-topic="datatypes">Data Types</a></li>
+                        <li><a href="#" class="topic-link" data-topic="numbers">Numbers</a></li>
+                        <li><a href="#" class="topic-link" data-topic="strings">Strings</a></li>
+                    </ul>
+                    <h3>Control Flow</h3>
+                     <ul>
+                        <li><a href="#" class="topic-link" data-topic="ifelse">If...Else</a></li>
+                        <li><a href="#" class="topic-link" data-topic="forloops">For Loops</a></li>
+                    </ul>
+                    <h3>Data Structures</h3>
+                    <ul>
+                        <li><a href="#" class="topic-link" data-topic="lists">Lists</a></li>
+                        <li><a href="#" class="topic-link" data-topic="tuples">Tuples</a></li>
+                        <li><a href="#" class="topic-link" data-topic="dictionaries">Dictionaries</a></li>
+                    </ul>
+                    <h3>Functions</h3>
+                    <ul>
+                        <li><a href="#" class="topic-link" data-topic="functions">Defining Functions</a></li>
+                        <li><a href="#" class="topic-link" data-topic="arguments">Arguments</a></li>
+                    </ul>
+                </aside>
+                <div class="main-content">
+                    <div class="topic-explanation">
+                        <!-- Content will be loaded by JS -->
+                    </div>
+                    <div class="code-editor-container">
+                        <h3>Try it Yourself</h3>
+                        <div id="monaco-editor"></div>
+                        <div class="editor-controls">
+                            <button id="run-btn" disabled>Loading Editor...</button>
+                        </div>
+                        <div class="output">
+                            <pre id="code-output"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Practice Zone Section -->
+        <section id="practice" class="page">
+             <div class="practice-zone">
+                <h2>Practice Zone</h2>
+                <div class="challenge-grid">
+                    <div class="challenge-card">
+                        <h3>Reverse a String</h3>
+                        <p>Write a function that takes a string and returns it reversed.</p>
+                        <span class="difficulty easy">Easy</span>
+                        <button class="solve-btn">Solve Challenge</button>
+                    </div>
+                    <div class="challenge-card">
+                        <h3>Find the Factorial</h3>
+                        <p>Write a function to find the factorial of a non-negative integer using recursion.</p>
+                        <span class="difficulty medium">Medium</span>
+                         <button class="solve-btn">Solve Challenge</button>
+                    </div>
+                    <div class="challenge-card">
+                        <h3>Check for Palindrome</h3>
+                        <p>Check if a given string is a palindrome (reads the same forwards and backwards).</p>
+                        <span class="difficulty easy">Easy</span>
+                         <button class="solve-btn">Solve Challenge</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="page">
+            <div class="quiz-container">
+                <h2>Python Basics Quiz</h2>
+                <div id="quiz-content">
+                    <div class="question">
+                        <p>1. What is the correct file extension for Python files?</p>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="a"> .pyt</label>
+                            <label><input type="radio" name="q1" value="b"> .py</label>
+                            <label><input type="radio" name="q1" value="c"> .pt</label>
+                        </div>
+                    </div>
+                    <div class="question">
+                        <p>2. How do you insert COMMENTS in Python code?</p>
+                         <div class="options">
+                            <label><input type="radio" name="q2" value="a"> /*This is a comment*/</label>
+                            <label><input type="radio" name="q2" value="b"> //This is a comment</label>
+                            <label><input type="radio" name="q2" value="c"> #This is a comment</label>
+                        </div>
+                    </div>
+                </div>
+                <button id="submit-quiz">Submit Answers</button>
+                <div id="quiz-results"></div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA FOR TUTORIALS (EXPANDED) ---
+        const tutorialContent = {
+            intro: { title: "Introduction to Python", explanation: `<p>Python is a high-level, interpreted, interactive and object-oriented scripting language. It is designed to be highly readable, using English keywords frequently where other languages use punctuation.</p><p>This is the classic "Hello, World!" program:</p>`, code: `print("Hello, World!")` },
+            syntax: { title: "Python Syntax", explanation: `<p>Python syntax was designed for readability. It uses new lines to complete a command, as opposed to other programming languages which often use semicolons or parentheses.</p><p>Python relies on <strong>indentation</strong> (whitespace at the beginning of a line) to define scope, such as the scope of loops, functions, and classes.</p>`, code: `if 5 > 2:\n  print("Five is greater than two!")` },
+            comments: { title: "Python Comments", explanation: `<p>Comments can be used to explain Python code or to prevent execution when testing. Comments start with a <code>#</code>, and Python will ignore them.</p>`, code: `# This is a comment\nprint("This part of the code will run.")` },
+            variables: { title: "Python Variables", explanation: `<p>In Python, variables are created when you assign a value to it. There is no command for declaring a variable.</p>`, code: `x = 5\ny = "John"\nprint(x)\nprint(y)` },
+            datatypes: { title: "Python Data Types", explanation: `<p>Python has the following data types built-in by default:</p><ul><li>Text Type: <code>str</code></li><li>Numeric Types: <code>int</code>, <code>float</code></li><li>Sequence Types: <code>list</code>, <code>tuple</code></li><li>Mapping Type: <code>dict</code></li></ul><p>You can get the data type of any object by using the <code>type()</code> function.</p>`, code: `x = 5\nprint(type(x))\ny = "Hello"\nprint(type(y))` },
+            numbers: { title: "Python Numbers", explanation: `<p>There are two main numeric types in Python: <code>int</code> and <code>float</code>.</p><ul><li><code>int</code>: A whole number, positive or negative, without decimals.</li><li><code>float</code>: A number, positive or negative, containing one or more decimals.</li></ul>`, code: `x = 1    # int\ny = 2.8  # float\n\nprint(type(x))\nprint(type(y))` },
+            strings: { title: "Python Strings", explanation: `<p>Strings in python are surrounded by either single quotation marks, or double quotation marks. You can get the character at a specific position (indexing) by using square brackets <code>[]</code>.</p>`, code: `a = "Hello, World!"\nprint(a[1]) # prints 'e'` },
+            ifelse: { title: "Python If...Else", explanation: `<p>Python supports the usual logical conditions from mathematics. An "if statement" is written by using the <code>if</code> keyword. The <code>elif</code> keyword is Python's way of saying "if the previous conditions were not true, then try this condition". The <code>else</code> keyword catches anything which isn't caught by the preceding conditions.</p>`, code: `a = 200\nb = 33\nif b > a:\n  print("b is greater than a")\nelif a == b:\n  print("a and b are equal")\nelse:\n  print("a is greater than b")` },
+            forloops: { title: "Python For Loops", explanation: `<p>A <code>for</code> loop is used for iterating over a sequence (like a list, a tuple, or a string). With the for loop we can execute a set of statements, once for each item in the sequence.</p>`, code: `fruits = ["apple", "banana", "cherry"]\nfor x in fruits:\n  print(x)` },
+            lists: { title: "Python Lists", explanation: `<p>Lists are used to store multiple items in a single variable. Lists are created using square brackets. List items are ordered, changeable, and allow duplicate values.</p>`, code: `my_list = ["apple", "banana", "cherry"]\nprint(my_list)\nprint(my_list[1]) # Access item by index` },
+            tuples: { title: "Python Tuples", explanation: `<p>A tuple is a collection which is <strong>ordered</strong> and <strong>unchangeable</strong>. In Python tuples are written with round brackets. You cannot change, add, or remove items after the tuple has been created.</p>`, code: `my_tuple = ("apple", "banana", "cherry")\nprint(my_tuple)\nprint(my_tuple[0])` },
+            dictionaries: { title: "Python Dictionaries", explanation: `<p>Dictionaries are used to store data values in <code>key:value</code> pairs. A dictionary is a collection which is ordered, changeable and does not allow duplicate keys. Dictionaries are written with curly brackets <code>{}</code>.</p>`, code: `thisdict = {\n  "brand": "Ford",\n  "model": "Mustang",\n  "year": 1964\n}\nprint(thisdict["model"])` },
+            functions: { title: "Defining Functions", explanation: `<p>A function is a block of code which only runs when it is called. You can pass data, known as parameters, into a function. A function is defined using the <code>def</code> keyword.</p>`, code: `def my_function():\n  print("Hello from a function")\n\nmy_function()` },
+            arguments: { title: "Function Arguments", explanation: `<p>Information can be passed into functions as arguments. Arguments are specified after the function name, inside the parentheses. You can add as many arguments as you want, just separate them with a comma.</p>`, code: `def greet(name):\n  print("Hello, " + name)\n\ngreet("Alice")` }
+        };
+
+        const topicExplanationContainer = document.querySelector('.topic-explanation');
+        const runBtn = document.getElementById('run-btn');
+        const codeOutput = document.getElementById('code-output');
+
+        let pyodide;
+        let monacoEditor;
+
+        // --- MONACO EDITOR & PYODIDE INITIALIZATION ---
+        async function main() {
+            codeOutput.textContent = 'Loading editor...';
+            await initMonaco();
+            codeOutput.textContent = 'Editor loaded. Loading Python interpreter...';
+            await initPyodide();
+        }
+
+        function initMonaco() {
+            return new Promise((resolve) => {
+                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' }});
+                require(['vs/editor/editor.main'], function() {
+                    monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                        language: 'python',
+                        theme: 'vs-dark',
+                        automaticLayout: true,
+                        minimap: { enabled: false },
+                        wordWrap: 'on'
+                    });
+                    runBtn.disabled = true; // Disabled until Pyodide is ready
+                    runBtn.textContent = 'Loading Python...';
+                    console.log("Monaco Editor is ready.");
+                    resolve();
+                });
+            });
+        }
+        
+        async function initPyodide() {
+            try {
+                pyodide = await loadPyodide();
+                console.log("Pyodide is ready.");
+                runBtn.disabled = false;
+                runBtn.textContent = 'Run';
+                codeOutput.textContent = 'Python engine loaded. You can now run code.';
+            } catch (error) {
+                console.error("Pyodide loading failed:", error);
+                runBtn.textContent = 'Error Loading';
+                codeOutput.textContent = 'Failed to load the Python interpreter.';
+            }
+        }
+        main(); // Start the loading process
+
+        // --- CORE FUNCTIONS ---
+        function loadTopicContent(topicKey) {
+            const topic = tutorialContent[topicKey];
+            if (!topic) return;
+
+            topicExplanationContainer.innerHTML = `<h2>${topic.title}</h2>${topic.explanation}`;
+            if(monacoEditor) {
+                monacoEditor.setValue(topic.code);
+            }
+            codeOutput.textContent = ''; // Clear output
+        }
+        
+        // --- EVENT LISTENERS ---
+
+        // Theme switcher
+        const themeSwitcher = document.getElementById('checkbox');
+        themeSwitcher.addEventListener('change', () => {
+            const theme = themeSwitcher.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            if(monacoEditor) {
+                monaco.editor.setTheme(theme === 'dark' ? 'vs-dark' : 'vs');
+            }
+        });
+
+        // Main Page Navigation (Home, Tutorial, etc.)
+        const navItems = document.querySelectorAll('.nav-item');
+        const pages = document.querySelectorAll('.page');
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const targetId = item.getAttribute('href').substring(1);
+                pages.forEach(page => page.classList.toggle('active', page.id === targetId));
+                navLinks.classList.remove('active'); // Close hamburger menu on selection
+            });
+        });
+        
+        // "Start Learning" button
+        const ctaButton = document.querySelector('.cta-button');
+        if(ctaButton){ ctaButton.addEventListener('click', () => { document.querySelector('.nav-item[href="#tutorial"]').click(); }); }
+        
+        // Tutorial Side Navigation
+        const topicLinks = document.querySelectorAll('.topic-link');
+        topicLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                topicLinks.forEach(l => l.classList.remove('active-topic'));
+                link.classList.add('active-topic');
+                const topicKey = link.dataset.topic;
+                loadTopicContent(topicKey);
+            });
+        });
+
+        // "Try it Yourself" Code Runner
+        runBtn.addEventListener('click', async () => {
+            if (!pyodide || !monacoEditor) { codeOutput.textContent = "Environment is not ready."; return; }
+            const pythonCode = monacoEditor.getValue();
+            codeOutput.textContent = "Running...";
+            try {
+                pyodide.globals.set("stdout_capture", "");
+                await pyodide.runPythonAsync(`import sys, io; sys.stdout = io.StringIO()`);
+                await pyodide.runPythonAsync(pythonCode);
+                let stdout = pyodide.runPython("sys.stdout.getvalue()");
+                codeOutput.textContent = stdout.trim() || "(No output)";
+            } catch (err) {
+                codeOutput.textContent = `Error:\n${err.message}`;
+            }
+        });
+
+        // Quiz Submission
+        const submitQuizBtn = document.getElementById('submit-quiz');
+        if(submitQuizBtn){
+            submitQuizBtn.addEventListener('click', () => {
+                const results = document.getElementById('quiz-results');
+                let score = 0;
+                const answers = { q1: 'b', q2: 'c' };
+                const q1Answer = document.querySelector('input[name="q1"]:checked');
+                const q2Answer = document.querySelector('input[name="q2"]:checked');
+                if (q1Answer && q1Answer.value === answers.q1) score++;
+                if (q2Answer && q2Answer.value === answers.q2) score++;
+                results.innerHTML = `<h3>Your score: ${score} out of 2</h3>`;
+            });
+        }
+        
+        // --- INITIALIZATION ---
+        loadTopicContent('intro');
+    });
+    </script>
+</body>
+</html>
