@@ -1,866 +1,814 @@
-https://thisiskarthick-5.github.io/tutorial-website/
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn Python</title>
-    <!-- Pyodide CDN for running Python in the browser -->
+    <title>PyMastery Pro | Interactive Python Curriculum</title>
+    
+    <!-- Core Engine -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* Basic Setup */
+        /* --- DESIGN SYSTEM (Commercial Grade) --- */
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --background-color: #ecf0f1;
-            --text-color: #34495e;
-            --header-bg: #fff;
-            --card-bg: #fff;
-            --border-color: #bdc3c7;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --primary: #8b5cf6; /* Violet 500 */
+            --primary-dark: #7c3aed;
+            --bg-main: #0f172a; /* Slate 900 */
+            --bg-panel: #1e293b; /* Slate 800 */
+            --bg-editor: #1e1e1e; /* VS Code Dark */
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --font-ui: 'Inter', system-ui, sans-serif;
+            --font-code: 'JetBrains Mono', 'Consolas', monospace;
         }
 
-        [data-theme="dark"] {
-            --primary-color: #3498db;
-            --secondary-color: #27ae60;
-            --background-color: #2c3e50;
-            --text-color: #ecf0f1;
-            --header-bg: #34495e;
-            --card-bg: #34495e;
-            --border-color: #7f8c8d;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            transition: background-color 0.3s, color 0.3s;
+            font-family: var(--font-ui);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        /* Header and Navbar */
+        /* --- HEADER --- */
         header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            height: 60px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 50;
+        }
+
+        .brand { font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem; color: #fff; }
+        .brand i { color: var(--primary); font-size: 1.5rem; }
+        
+        .user-stats { display: flex; align-items: center; gap: 1.5rem; font-size: 0.9rem; }
+        .progress-track { width: 200px; height: 8px; background: #334155; border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #a78bfa); width: 0%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-text { font-size: 0.8rem; color: var(--text-muted); min-width: 40px; text-align: right; }
+
+        /* --- MAIN LAYOUT --- */
+        .workspace { display: flex; height: calc(100vh - 60px); }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
         
-        .navbar {
+        .chapter-group { border-bottom: 1px solid var(--border); }
+        .chapter-title {
+            padding: 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            background: rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+        }
+
+        .lesson-list { list-style: none; }
+        .lesson-item {
+            padding: 0.9rem 1.2rem;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
-            background-color: var(--header-bg);
-            box-shadow: var(--shadow);
-            transition: background-color 0.3s;
+            font-size: 0.9rem;
+            color: #cbd5e1;
         }
+        .lesson-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+        .lesson-item.active { background: rgba(139, 92, 246, 0.1); border-left-color: var(--primary); color: #fff; font-weight: 600; }
+        .lesson-item.completed i { color: var(--success); opacity: 1; }
+        .lesson-item i { opacity: 0.3; transition: opacity 0.3s; }
 
-        .logo {
-            display: flex;
-            align-items: center;
-        }
+        /* Content Area */
+        .content-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 0 2rem 2rem 2rem; max-width: 800px; margin: 0 auto; width: 100%; }
+        
+        .lesson-header { padding: 2rem 0 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+        .lesson-header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; color: #fff; }
+        .lesson-meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-muted); }
+        .badge { background: #334155; padding: 2px 8px; border-radius: 4px; color: #fff; font-size: 0.75rem; }
 
-        .logo img {
-            height: 40px;
-            margin-right: 10px;
-        }
+        .prose { line-height: 1.7; color: #cbd5e1; font-size: 1.05rem; }
+        .prose h2 { color: #fff; margin: 1.5rem 0 0.8rem 0; font-size: 1.4rem; }
+        .prose p { margin-bottom: 1.2rem; }
+        .prose code { background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: var(--font-code); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); }
+        .prose ul { margin-left: 1.5rem; margin-bottom: 1.5rem; }
+        .prose li { margin-bottom: 0.5rem; }
+        
+        .info-box { background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--primary); padding: 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
 
-        .logo a {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-decoration: none;
-            color: var(--text-color);
-        }
-
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            margin: 0 1rem;
-            padding-bottom: 5px;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a.active,
-        .nav-links a:hover {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-
-
-        /* Page Transitions */
-        .page {
-            display: none;
-            padding: 2rem;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-
-        /* Homepage Hero Section */
-        .hero {
-            text-align: center;
-            padding: 4rem 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-        }
-
-        .hero-logo {
-            max-width: 150px;
-            margin-bottom: 1rem;
-        }
-
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
-        }
-
-        .cta-button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-
-        .cta-button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        /* Tutorial Layout */
-        .tutorial-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .side-nav {
-            background-color: var(--card-bg);
-            padding: 1rem;
-            border-radius: 5px;
-            box-shadow: var(--shadow);
-            height: fit-content;
-            position: sticky;
-            top: 100px; /* Adjust based on header height */
-        }
-
-        .side-nav h3 {
-            color: var(--primary-color);
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .side-nav h3:first-child {
-            margin-top: 0;
-        }
-
-        .side-nav ul {
-            list-style: none;
-        }
-
-        .side-nav ul li a {
-            display: block;
-            padding: 0.5rem;
-            text-decoration: none;
-            color: var(--text-color);
-            border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .side-nav ul li a:hover,
-        .side-nav ul li a.active-topic {
-            background-color: var(--primary-color);
-            color: #fff;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .topic-explanation {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 5px;
-            box-shadow: var(--shadow);
-        }
-        .topic-explanation h2 {
-            margin-bottom: 1rem;
-        }
-        .topic-explanation p, .topic-explanation ul {
-            margin-bottom: 1rem;
-        }
-        .topic-explanation ul {
-            padding-left: 20px;
-        }
-        .topic-explanation code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-
-        /* Code Editor */
-        .code-editor-container {
-            background-color: var(--card-bg);
-            padding: 1rem;
-            border-radius: 5px;
-            box-shadow: var(--shadow);
-        }
-        .code-editor {
-            background-color: #1e1e1e;
-            color: #d4d4d4;
-            border-radius: 5px;
-            padding: 1rem;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        .editor-header {
-            color: #bbb;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #444;
-        }
-
-        #code-input {
-            width: 100%;
-            height: 150px;
-            background: none;
-            border: none;
-            color: inherit;
-            font-family: inherit;
-            font-size: 1rem;
-            resize: vertical;
-        }
-        #code-input:focus {
-            outline: none;
-        }
-
-        #run-btn {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
+        /* Editor & Terminal Panel */
+        .ide-panel { width: 45%; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg-editor); min-width: 400px; }
+        
+        .ide-toolbar {
             padding: 0.5rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: background-color 0.3s;
-            float: right;
-        }
-
-        #run-btn:hover {
-            background-color: #27ae60;
-        }
-        #run-btn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .output {
-            margin-top: 3.5rem; /* clear the button */
-            background-color: rgba(0,0,0,0.2);
-            padding: 0.5rem;
-            border-radius: 5px;
-            min-height: 50px;
-            width: 100%;
-        }
-        .output pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        /* Practice Zone */
-        .practice-zone h2, .quiz-container h2 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .challenge-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .challenge-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: #252526;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            height: 48px;
         }
 
-        .challenge-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-        .challenge-card h3 { margin-bottom: 0.5rem; }
-        .challenge-card p { flex-grow: 1; margin-bottom: 1rem; }
-        .difficulty {
-            display: inline-block;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            color: #fff;
-            margin-bottom: 1rem;
-            align-self: flex-start;
-        }
+        .tool-group { display: flex; gap: 0.5rem; }
 
-        .difficulty.easy { background-color: #2ecc71; }
-        .difficulty.medium { background-color: #f39c12; }
+        .btn { border: none; padding: 0.4rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; font-size: 0.85rem; font-family: var(--font-ui); }
+        .btn-primary { background: var(--success); color: #fff; }
+        .btn-primary:hover { background: #059669; }
+        .btn-secondary { background: #3f3f46; color: #e4e4e7; }
+        .btn-secondary:hover { background: #52525b; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .solve-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.7rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            align-self: flex-end;
-        }
-        .solve-btn:hover { background-color: #2980b9; }
-
-
-        /* Quiz Section */
-        .quiz-container {
-            max-width: 800px;
-            margin: auto;
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-
-        .question {
-            margin-bottom: 1.5rem;
-        }
-        .question p {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        .options label {
-            display: block;
-            margin: 0.5rem 0;
-            padding: 0.8rem;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 1px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-
-        .options label:hover {
-            background-color: var(--background-color);
+        #editor-container { flex: 1; position: relative; }
+        
+        /* Terminal */
+        .terminal-wrapper { height: 35%; background: #0f172a; border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+        .terminal-bar { padding: 0.3rem 1rem; background: #1e293b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        .terminal-output { 
+            flex: 1; 
+            padding: 1rem; 
+            font-family: var(--font-code); 
+            font-size: 0.9rem; 
+            overflow-y: auto; 
+            white-space: pre-wrap;
+            color: #e2e8f0;
+            line-height: 1.4;
         }
         
-        .options input[type="radio"] {
-            margin-right: 10px;
-        }
+        /* Terminal States */
+        .t-log { color: #e2e8f0; }
+        .t-success { color: var(--success); font-weight: bold; border-left: 3px solid var(--success); padding-left: 10px; margin: 5px 0; }
+        .t-error { color: #f87171; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem; }
+        .t-system { color: #94a3b8; font-style: italic; }
 
-        #submit-quiz {
-            background-color: var(--secondary-color);
-            color: #fff;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            display: block;
-            margin: 1.5rem auto 0 auto;
-            transition: background-color 0.3s;
-        }
-        #submit-quiz:hover {
-            background-color: #27ae60;
-        }
+        /* Loader */
+        .app-loader { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        .spinner { width: 50px; height: 50px; border: 3px solid rgba(139, 92, 246, 0.3); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #quiz-results {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
+        /* Navigation Buttons */
+        .nav-footer { margin-top: auto; padding-top: 3rem; display: flex; justify-content: space-between; }
 
-        /* Dark Mode Toggle */
-        .theme-switch-wrapper {
-          display: flex;
-          align-items: center;
-        }
-        .theme-switch {
-          display: inline-block;
-          height: 24px;
-          position: relative;
-          width: 50px;
-        }
-
-        .theme-switch input {
-          display:none;
-        }
-
-        .slider {
-          background-color: #ccc;
-          bottom: 0;
-          cursor: pointer;
-          left: 0;
-          position: absolute;
-          right: 0;
-          top: 0;
-          transition: .4s;
-        }
-
-        .slider:before {
-          background-color: #fff;
-          bottom: 4px;
-          content: "";
-          height: 16px;
-          left: 4px;
-          position: absolute;
-          transition: .4s;
-          width: 16px;
-        }
-
-        input:checked + .slider {
-          background-color: var(--primary-color);
-        }
-
-        input:checked + .slider:before {
-          transform: translateX(26px);
-        }
-
-        .slider.round {
-          border-radius: 34px;
-        }
-
-        .slider.round:before {
-          border-radius: 50%;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .tutorial-layout {
-                grid-template-columns: 1fr;
-            }
-            .side-nav {
-                position: static;
-                margin-bottom: 2rem;
-                width: 100%;
-            }
-            .navbar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .nav-links {
-                margin-top: 1rem;
-                width: 100%;
-                display: flex;
-                justify-content: space-around;
-            }
-            .nav-links a { margin: 0 5px; }
-            .hero h1 { font-size: 2.5rem; }
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .workspace { flex-direction: column; overflow: auto; }
+            .sidebar { width: 100%; height: auto; max-height: 150px; display: none; } /* Hide sidebar on mobile for focus */
+            .content-area { padding: 1rem; }
+            .ide-panel { width: 100%; height: 600px; border-left: none; border-top: 1px solid var(--border); }
         }
     </style>
 </head>
 <body>
+
+    <!-- LOADING SCREEN -->
+    <div id="app-loader" class="app-loader">
+        <div class="spinner"></div>
+        <h2 style="font-weight: 300; color: #fff;">Building Python Runtime...</h2>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 10px;">Loading Pyodide & Standard Libraries</p>
+    </div>
+
+    <!-- MAIN APP -->
     <header>
-        <nav class="navbar">
-            <div class="logo">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo">
-                <a href="#">Learn Python</a>
+        <div class="brand">
+            <i class="fab fa-python"></i>
+            PyMastery <span style="font-weight:400; font-size:0.8rem; background:var(--primary); padding:2px 6px; border-radius:4px;">PRO</span>
+        </div>
+        <div class="user-stats">
+            <div style="text-align:right;">
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:4px;">COURSE COMPLETION</div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="global-progress"></div>
+                </div>
             </div>
-            <div class="nav-links">
-                <a href="#home" class="nav-item active">Home</a>
-                <a href="#tutorial" class="nav-item">Tutorial</a>
-                <a href="#practice" class="nav-item">Practice Zone</a>
-                <a href="#quiz" class="nav-item">Quizzes</a>
-            </div>
-            <div class="theme-switch-wrapper">
-                <label class="theme-switch" for="checkbox">
-                    <input type="checkbox" id="checkbox" />
-                    <div class="slider round"></div>
-                </label>
-            </div>
-        </nav>
+            <div class="progress-text" id="progress-percent">0%</div>
+        </div>
     </header>
 
-    <main>
-        <!-- Homepage Section -->
-        <section id="home" class="page active">
-            <div class="hero">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo" class="hero-logo">
-                <h1>Welcome to Interactive Python Learning</h1>
-                <p>Your journey to mastering Python starts here. Learn by doing with our hands-on tutorials and challenges.</p>
-                <button class="cta-button">Start Learning</button>
-            </div>
-        </section>
+    <div class="workspace">
+        <aside class="sidebar" id="sidebar">
+            <!-- Dynamic Sidebar Content -->
+        </aside>
 
-        <!-- Tutorial Section -->
-        <section id="tutorial" class="page">
-            <div class="tutorial-layout">
-                <aside class="side-nav">
-                    <h3>Basics</h3>
-                    <ul>
-                        <li><a href="#" class="topic-link active-topic" data-topic="intro">Introduction</a></li>
-                        <li><a href="#" class="topic-link" data-topic="syntax">Syntax</a></li>
-                        <li><a href="#" class="topic-link" data-topic="comments">Comments</a></li>
-                        <li><a href="#" class="topic-link" data-topic="variables">Variables</a></li>
-                        <li><a href="#" class="topic-link" data-topic="datatypes">Data Types</a></li>
-                        <li><a href="#" class="topic-link" data-topic="numbers">Numbers</a></li>
-                        <li><a href="#" class="topic-link" data-topic="strings">Strings</a></li>
-                    </ul>
-                    <h3>Control Flow</h3>
-                     <ul>
-                        <li><a href="#" class="topic-link" data-topic="ifelse">If...Else</a></li>
-                        <li><a href="#" class="topic-link" data-topic="forloops">For Loops</a></li>
-                    </ul>
-                    <h3>Data Structures</h3>
-                    <ul>
-                        <li><a href="#" class="topic-link" data-topic="lists">Lists</a></li>
-                        <li><a href="#" class="topic-link" data-topic="tuples">Tuples</a></li>
-                        <li><a href="#" class="topic-link" data-topic="dictionaries">Dictionaries</a></li>
-                    </ul>
-                    <h3>Functions</h3>
-                    <ul>
-                        <li><a href="#" class="topic-link" data-topic="functions">Defining Functions</a></li>
-                        <li><a href="#" class="topic-link" data-topic="arguments">Arguments</a></li>
-                    </ul>
-                </aside>
-                <div class="main-content">
-                    <div class="topic-explanation">
-                        <!-- Content will be loaded by JS -->
-                    </div>
-                    <div class="code-editor-container">
-                        <h3>Try it Yourself</h3>
-                        <div class="code-editor">
-                            <div class="editor-header">
-                                <span>Python Terminal</span>
-                            </div>
-                            <textarea id="code-input" spellcheck="false"></textarea>
-                            <button id="run-btn" disabled>Loading Python...</button>
-                            <div class="output">
-                                <pre id="code-output"></pre>
-                            </div>
-                        </div>
-                    </div>
+        <main class="content-area">
+            <div id="lesson-view">
+                <!-- Dynamic Lesson Content -->
+            </div>
+            
+            <div class="nav-footer">
+                <button id="prev-btn" class="btn btn-secondary" style="visibility: hidden;">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button id="next-btn" class="btn btn-primary" style="visibility: hidden;">
+                    Next Lesson <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </main>
+
+        <section class="ide-panel">
+            <div class="ide-toolbar">
+                <div class="tool-group">
+                    <span style="font-size: 0.85rem; color: #94a3b8; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-file-code"></i> main.py
+                    </span>
+                </div>
+                <div class="tool-group">
+                    <button id="reset-btn" class="btn btn-secondary" title="Reset Code">
+                        <i class="fas fa-undo"></i>
+                    </button>
+                    <button id="hint-btn" class="btn btn-secondary" title="Show Solution">
+                        <i class="fas fa-lightbulb"></i>
+                    </button>
+                    <button id="run-btn" class="btn btn-primary" disabled>
+                        <i class="fas fa-play"></i> Run & Check
+                    </button>
+                </div>
+            </div>
+            <div id="editor-container"></div>
+            <div class="terminal-wrapper">
+                <div class="terminal-bar">
+                    <span><i class="fas fa-terminal"></i> Terminal</span>
+                    <span style="cursor:pointer;" onclick="UI.clearTerminal()">Clear Output</span>
+                </div>
+                <div id="terminal-output" class="terminal-output">
+                    <div class="t-system">Initializing environment...</div>
                 </div>
             </div>
         </section>
+    </div>
 
-        <!-- Practice Zone Section -->
-        <section id="practice" class="page">
-            <div class="practice-zone">
-                <h2>Practice Zone</h2>
-                <div class="challenge-grid">
-                    <div class="challenge-card">
-                        <h3>Reverse a String</h3>
-                        <p>Write a function that takes a string and returns it reversed.</p>
-                        <span class="difficulty easy">Easy</span>
-                        <button class="solve-btn">Solve Challenge</button>
-                    </div>
-                    <div class="challenge-card">
-                        <h3>Find the Factorial</h3>
-                        <p>Write a function to find the factorial of a non-negative integer using recursion.</p>
-                        <span class="difficulty medium">Medium</span>
-                         <button class="solve-btn">Solve Challenge</button>
-                    </div>
-                    <div class="challenge-card">
-                        <h3>Check for Palindrome</h3>
-                        <p>Check if a given string is a palindrome (reads the same forwards and backwards).</p>
-                        <span class="difficulty easy">Easy</span>
-                         <button class="solve-btn">Solve Challenge</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
 
-        <!-- Quiz Section -->
-        <section id="quiz" class="page">
-            <div class="quiz-container">
-                <h2>Python Basics Quiz</h2>
-                <div id="quiz-content">
-                    <div class="question">
-                        <p>1. What is the correct file extension for Python files?</p>
-                        <div class="options">
-                            <label><input type="radio" name="q1" value="a"> .pyt</label>
-                            <label><input type="radio" name="q1" value="b"> .py</label>
-                            <label><input type="radio" name="q1" value="c"> .pt</label>
-                        </div>
-                    </div>
-                    <div class="question">
-                        <p>2. How do you insert COMMENTS in Python code?</p>
-                         <div class="options">
-                            <label><input type="radio" name="q2" value="a"> /*This is a comment*/</label>
-                            <label><input type="radio" name="q2" value="b"> //This is a comment</label>
-                            <label><input type="radio" name="q2" value="c"> #This is a comment</label>
-                        </div>
-                    </div>
-                </div>
-                <button id="submit-quiz">Submit Answers</button>
-                <div id="quiz-results"></div>
-            </div>
-        </section>
-    </main>
-    
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- DATA FOR TUTORIALS (EXPANDED) ---
-        const tutorialContent = {
-            intro: {
-                title: "Introduction to Python",
-                explanation: `<p>Python is a high-level, interpreted, interactive and object-oriented scripting language. Python is designed to be highly readable.</p><p>It uses English keywords frequently where other languages use punctuation, and it has fewer syntactical constructions than other languages.</p><p>This is the classic "Hello, World!" program:</p>`,
-                code: `print("Hello, World!")`
+        /**
+         * ------------------------------------------------------------------
+         * THE CURRICULUM DATA ENGINE (The "Product")
+         * ------------------------------------------------------------------
+         */
+       const CURRICULUM = [
+            // MODULE 1: INTRODUCTION
+            {
+                id: "mod1", title: "Module 1: The Foundation", lessons: [
+                    {
+                        id: "1.1", title: "Hello World", desc: "First Steps",
+                        content: `<h1>Your First Program</h1><div class="prose"><p>In the programming world, the "Hello World" program is a rite of passage. It verifies that your environment is ready.</p><h3>The Concept</h3><p>We use the <code>print()</code> function to send data to the standard output (your screen).</p><h3>Task</h3><p>Print the phrase <code>Hello, Python!</code> exactly.</p></div>`,
+                        defaultCode: `print("Hello, World!")`, expected: "Hello, Python!"
+                    },
+                    {
+                        id: "1.2", title: "Python Comments", desc: "Code Notes",
+                        content: `<h1>Comments</h1><div class="prose"><p>Code is read by humans more often than machines. Comments are lines ignored by Python.</p><ul><li>Single line: Starts with <code>#</code></li></ul><h3>Task</h3><p>Write a comment <code># My Code</code> and then print <code>Done</code>.</p></div>`,
+                        defaultCode: `# This is a comment\nprint("Test")`, expected: "Done", validation: (out) => out.includes("Done")
+                    },
+                    {
+                        id: "1.3", title: "Variables", desc: "Data Containers",
+                        content: `<h1>Variables</h1><div class="prose"><p>Variables are labelled boxes for data. Python is dynamically typed, meaning you don't declare types.</p><h3>Task</h3><p>Create variable <code>x</code> equal to 50. Print <code>x</code>.</p></div>`,
+                        defaultCode: `x = 10\nprint(x)`, expected: "50"
+                    },
+                    {
+                        id: "1.4", title: "Data Types: Strings", desc: "Working with Text",
+                        content: `<h1>Strings</h1><div class="prose"><p>Text in Python is called a String (str). You can use single <code>'</code> or double <code>"</code> quotes.</p><h3>Task</h3><p>Assign your name to a variable <code>name</code> and print it.</p></div>`,
+                        defaultCode: `name = "YourName"\nprint(name)`, validation: (out, code) => code.includes("name =") && out.length > 0
+                    },
+                    {
+                        id: "1.5", title: "Data Types: Integers", desc: "Whole Numbers",
+                        content: `<h1>Integers</h1><div class="prose"><p>Integers are whole numbers without decimals. You can perform math on them directly.</p><h3>Task</h3><p>Print the result of <code>100 + 50</code>.</p></div>`,
+                        defaultCode: `print(1 + 1)`, expected: "150"
+                    },
+                    {
+                        id: "1.6", title: "Data Types: Floats", desc: "Decimals",
+                        content: `<h1>Floating Point Numbers</h1><div class="prose"><p>Numbers with decimals are called Floats. <code>3.14</code> is a float.</p><h3>Task</h3><p>Create a variable <code>pi</code> equal to <code>3.14</code> and print it.</p></div>`,
+                        defaultCode: ``, expected: "3.14"
+                    },
+                    {
+                        id: "1.7", title: "String Concatenation", desc: "Joining Text",
+                        content: `<h1>Concatenation</h1><div class="prose"><p>You can join strings using the <code>+</code> operator.</p><h3>Task</h3><p>Combine "Super" and "man" to print <code>Superman</code>.</p></div>`,
+                        defaultCode: `print("Bat" + "man")`, expected: "Superman"
+                    }
+                ]
             },
-            syntax: {
-                title: "Python Syntax",
-                explanation: `<p>Python was designed for readability. Unlike many other languages that use semicolons or parentheses to complete commands, Python uses new lines.</p><p>Python also relies heavily on <strong>indentation</strong> (whitespace at the beginning of a line) to define scope, such as the scope of loops, functions, and classes. A code block that is not indented correctly will cause an error.</p>`,
-                code: `if 5 > 2:\n  print("Five is greater than two!")`
+            // MODULE 2: CONTROL FLOW
+            {
+                id: "mod2", title: "Module 2: Logic & Control", lessons: [
+                    {
+                        id: "2.1", title: "Booleans", desc: "True or False",
+                        content: `<h1>Booleans</h1><div class="prose"><p>A Boolean represents one of two values: <code>True</code> or <code>False</code>.</p><h3>Task</h3><p>Print the result of <code>10 > 9</code>.</p></div>`,
+                        defaultCode: `print(5 > 10)`, expected: "True"
+                    },
+                    {
+                        id: "2.2", title: "If Statements", desc: "Making Decisions",
+                        content: `<h1>The If Statement</h1><div class="prose"><p>Python relies on <strong>indentation</strong> using whitespace to define scope.</p><h3>Task</h3><p>If <code>5 > 2</code>, print <code>Success</code>.</p></div>`,
+                        defaultCode: `if 5 > 2:\n    pass`, expected: "Success"
+                    },
+                    {
+                        id: "2.3", title: "Else Statements", desc: "The Alternative",
+                        content: `<h1>Else</h1><div class="prose"><p>The <code>else</code> keyword catches anything which isn't caught by the preceding conditions.</p><h3>Task</h3><p>Set <code>x = 2</code>. Write an if/else: if x > 5 print "Big", else print "Small".</p></div>`,
+                        defaultCode: `x = 2`, expected: "Small"
+                    },
+                    {
+                        id: "2.4", title: "Elif Statements", desc: "Multiple Conditions",
+                        content: `<h1>Elif</h1><div class="prose"><p>Short for "else if". It allows you to check multiple expressions.</p><h3>Task</h3><p>Set <code>grade = 75</code>. If grade > 90 print "A", elif grade > 70 print "B", else "C".</p></div>`,
+                        defaultCode: `grade = 75`, expected: "B"
+                    },
+                    {
+                        id: "2.5", title: "While Loops", desc: "Loop until False",
+                        content: `<h1>While Loops</h1><div class="prose"><p>Execute a set of statements as long as a condition is true.</p><h3>Task</h3><p>Print <code>i</code> as long as <code>i < 4</code>. Start i at 1. Increment i by 1 each time.</p></div>`,
+                        defaultCode: `i = 1\nwhile i < 6:\n  print(i)\n  i += 1`, expected: "1 2 3"
+                    },
+                    {
+                        id: "2.6", title: "For Loops", desc: "Iterating Sequences",
+                        content: `<h1>For Loops</h1><div class="prose"><p>Used for iterating over a sequence (like a list or string).</p><h3>Task</h3><p>Loop through "Python" and print each letter.</p></div>`,
+                        defaultCode: `for x in "Data":\n  print(x)`, validation: (out) => out.includes("P") && out.includes("n")
+                    },
+                    {
+                        id: "2.7", title: "The Range Function", desc: "Generating Numbers",
+                        content: `<h1>Range()</h1><div class="prose"><p>Returns a sequence of numbers. <code>range(6)</code> is 0 to 5.</p><h3>Task</h3><p>Use range to print numbers 0 to 4.</p></div>`,
+                        defaultCode: ``, expected: "0 1 2 3 4"
+                    }
+                ]
             },
-            comments: {
-                title: "Python Comments",
-                explanation: `<p>Comments can be used to explain Python code, to make the code more readable, or to prevent execution when testing code.</p><p>Comments start with a <code>#</code>, and Python will ignore them:</p>`,
-                code: `# This is a comment\nprint("Hello from the other side!")`
+            // MODULE 3: DATA STRUCTURES
+            {
+                id: "mod3", title: "Module 3: Data Structures", lessons: [
+                    {
+                        id: "3.1", title: "Creating Lists", desc: "Ordered Data",
+                        content: `<h1>Lists</h1><div class="prose"><p>Lists store multiple items in a single variable using square brackets.</p><h3>Task</h3><p>Create a list <code>nums</code> with 1, 2, 3. Print the list.</p></div>`,
+                        defaultCode: ``, expected: "[1, 2, 3]"
+                    },
+                    {
+                        id: "3.2", title: "Accessing Lists", desc: "Index Lookup",
+                        content: `<h1>Indexing</h1><div class="prose"><p>The first item has index 0.</p><h3>Task</h3><p>Given <code>fruits = ["apple", "banana", "cherry"]</code>, print "banana".</p></div>`,
+                        defaultCode: `fruits = ["apple", "banana", "cherry"]`, expected: "banana"
+                    },
+                    {
+                        id: "3.3", title: "List Methods", desc: "Append & Remove",
+                        content: `<h1>Modifying Lists</h1><div class="prose"><p>Use <code>.append()</code> to add items.</p><h3>Task</h3><p>Add "orange" to the <code>fruits</code> list and print the whole list.</p></div>`,
+                        defaultCode: `fruits = ["apple"]`, expected: "['apple', 'orange']"
+                    },
+                    {
+                        id: "3.4", title: "Tuples", desc: "Immutable Lists",
+                        content: `<h1>Tuples</h1><div class="prose"><p>Tuples are ordered and <strong>unchangeable</strong>. Written with round brackets.</p><h3>Task</h3><p>Create a tuple <code>mytuple</code> with "a" and "b". Print it.</p></div>`,
+                        defaultCode: ``, expected: "('a', 'b')"
+                    },
+                    {
+                        id: "3.5", title: "Sets", desc: "Unique Items",
+                        content: `<h1>Sets</h1><div class="prose"><p>Sets are unordered and unindexed. They do not allow duplicate values.</p><h3>Task</h3><p>Create a set with {1, 1, 2} and print it. Notice duplicates disappear.</p></div>`,
+                        defaultCode: ``, validation: (out) => out.includes("{1, 2}") || out.includes("{2, 1}")
+                    },
+                    {
+                        id: "3.6", title: "Dictionaries", desc: "Key-Value Pairs",
+                        content: `<h1>Dictionaries</h1><div class="prose"><p>Store data values in key:value pairs.</p><h3>Task</h3><p>Create a dict <code>car</code> with "brand": "Ford". Print the car.</p></div>`,
+                        defaultCode: ``, validation: (out) => out.includes("'brand': 'Ford'")
+                    },
+                    {
+                        id: "3.7", title: "Dict Access", desc: "Getting Values",
+                        content: `<h1>Accessing Dicts</h1><div class="prose"><p>Access values by referring to the key name.</p><h3>Task</h3><p>Print the value of "model" from <code>thisdict</code>.</p></div>`,
+                        defaultCode: `thisdict = {"brand": "Ford", "model": "Mustang"}`, expected: "Mustang"
+                    }
+                ]
             },
-            variables: {
-                title: "Python Variables",
-                explanation: `<p>In Python, variables are created when you assign a value to it. There is no command for declaring a variable.</p><p>Variables can store data of different types, and different types can do different things.</p><p>Example:</p>`,
-                code: `x = 5\ny = "John"\nprint(x)\nprint(y)`
+            // MODULE 4: FUNCTIONS
+            {
+                id: "mod4", title: "Module 4: Functions", lessons: [
+                    {
+                        id: "4.1", title: "Defining Functions", desc: "Reusable Blocks",
+                        content: `<h1>Functions</h1><div class="prose"><p>defined using the <code>def</code> keyword.</p><h3>Task</h3><p>Create function <code>my_func</code> that prints "Hello". Call it.</p></div>`,
+                        defaultCode: ``, expected: "Hello"
+                    },
+                    {
+                        id: "4.2", title: "Arguments", desc: "Passing Data",
+                        content: `<h1>Arguments</h1><div class="prose"><p>Information passed into functions.</p><h3>Task</h3><p>Create function <code>greet(name)</code> that prints "Hi " + name. Call it with "User".</p></div>`,
+                        defaultCode: ``, expected: "Hi User"
+                    },
+                    {
+                        id: "4.3", title: "Return Values", desc: "Output Data",
+                        content: `<h1>Return</h1><div class="prose"><p>To let a function return a value, use the <code>return</code> statement.</p><h3>Task</h3><p>Create function <code>add(x)</code> that returns <code>5 + x</code>. Print <code>add(10)</code>.</p></div>`,
+                        defaultCode: ``, expected: "15"
+                    },
+                    {
+                        id: "4.4", title: "Lambda Functions", desc: "Anonymous Funcs",
+                        content: `<h1>Lambda</h1><div class="prose"><p>A small anonymous function. Syntax: <code>lambda arguments : expression</code>.</p><h3>Task</h3><p>Create a lambda named <code>x</code> that adds 10 to argument <code>a</code>. Print <code>x(5)</code>.</p></div>`,
+                        defaultCode: `x = lambda a : a + 10`, expected: "15"
+                    },
+                    {
+                        id: "4.5", title: "Scope", desc: "Global vs Local",
+                        content: `<h1>Scope</h1><div class="prose"><p>A variable created inside a function is available only inside that function.</p><h3>Task</h3><p>Define a variable inside a function and try to print it. Then print a global variable.</p></div>`,
+                        defaultCode: `x = 300\ndef myfunc():\n  x = 200\n  print(x)\n\nmyfunc()\nprint(x)`, expected: "200 300"
+                    }
+                ]
             },
-            datatypes: {
-                title: "Python Data Types",
-                explanation: `<p>Variables can store data of different types. Python has the following data types built-in by default:</p><ul><li>Text Type: <code>str</code></li><li>Numeric Types: <code>int</code>, <code>float</code>, <code>complex</code></li><li>Sequence Types: <code>list</code>, <code>tuple</code></li><li>Mapping Type: <code>dict</code></li></ul><p>You can get the data type of any object by using the <code>type()</code> function.</p>`,
-                code: `x = 5\nprint(type(x))\ny = "Hello"\nprint(type(y))`
+            // MODULE 5: INTERMEDIATE PYTHON
+            {
+                id: "mod5", title: "Module 5: Intermediate", lessons: [
+                    {
+                        id: "5.1", title: "String Formatting", desc: "F-Strings",
+                        content: `<h1>F-Strings</h1><div class="prose"><p>The easiest way to format strings. Put an <code>f</code> before the quotes.</p><h3>Task</h3><p>Use f-string to print "I am {age}" where age is 30.</p></div>`,
+                        defaultCode: `age = 30`, expected: "I am 30"
+                    },
+                    {
+                        id: "5.2", title: "String Methods", desc: "Text Manipulation",
+                        content: `<h1>Methods</h1><div class="prose"><p><code>strip()</code> removes whitespace. <code>lower()</code> converts to lowercase.</p><h3>Task</h3><p>Convert " HELLO " to lowercase and strip spaces.</p></div>`,
+                        defaultCode: `txt = " HELLO "`, expected: "hello"
+                    },
+                    {
+                        id: "5.3", title: "List Comprehension", desc: "One-line Loops",
+                        content: `<h1>List Comprehension</h1><div class="prose"><p>Shorter syntax for creating new lists.</p><h3>Task</h3><p>Create list <code>[0, 1, 2]</code> using comprehension: <code>[x for x in range(3)]</code>. Print it.</p></div>`,
+                        defaultCode: ``, expected: "[0, 1, 2]"
+                    },
+                    {
+                        id: "5.4", title: "Try Except", desc: "Error Handling",
+                        content: `<h1>Try Except</h1><div class="prose"><p>The <code>try</code> block lets you test a block of code for errors. The <code>except</code> block lets you handle the error.</p><h3>Task</h3><p>Try to print undefined variable <code>x</code>. In except, print "An error occurred".</p></div>`,
+                        defaultCode: `try:\n  print(x)\nexcept:\n  pass`, expected: "An error occurred"
+                    },
+                    {
+                        id: "5.5", title: "Modules", desc: "Importing Code",
+                        content: `<h1>Math Module</h1><div class="prose"><p>Python has built-in modules.</p><h3>Task</h3><p>Import <code>math</code> and print <code>math.sqrt(64)</code>.</p></div>`,
+                        defaultCode: ``, expected: "8.0"
+                    }
+                ]
             },
-            numbers: {
-                title: "Python Numbers",
-                explanation: `<p>There are three numeric types in Python: <code>int</code>, <code>float</code>, and <code>complex</code>.</p><ul><li><code>int</code>: A whole number, positive or negative, without decimals.</li><li><code>float</code>: A number, positive or negative, containing one or more decimals.</li><li><code>complex</code>: Numbers with a real and imaginary part.</li></ul>`,
-                code: `x = 1    # int\ny = 2.8  # float\nz = 1j   # complex\n\nprint(type(x))\nprint(type(y))\nprint(type(z))`
+            // MODULE 6: OOP (Object Oriented)
+            {
+                id: "mod6", title: "Module 6: OOP", lessons: [
+                    {
+                        id: "6.1", title: "Classes", desc: "Blueprints",
+                        content: `<h1>Classes</h1><div class="prose"><p>A Class is like an object constructor, or a "blueprint" for creating objects.</p><h3>Task</h3><p>Create a class named <code>MyClass</code> with a property <code>x = 5</code>. Print <code>x</code> from the class directly (MyClass.x).</p></div>`,
+                        defaultCode: ``, expected: "5"
+                    },
+                    {
+                        id: "6.2", title: "Objects", desc: "Instances",
+                        content: `<h1>Objects</h1><div class="prose"><p>Now we create an object from the class.</p><h3>Task</h3><p>Create object <code>p1</code> from <code>MyClass</code>. Print <code>p1.x</code>.</p></div>`,
+                        defaultCode: `class MyClass:\n  x = 5`, expected: "5"
+                    },
+                    {
+                        id: "6.3", title: "The __init__ Function", desc: "Constructors",
+                        content: `<h1>__init__</h1><div class="prose"><p>This function is executed when the object is initiated.</p><h3>Task</h3><p>Create class <code>Person</code> with init taking <code>name</code>. Create object with name "John". Print name.</p></div>`,
+                        defaultCode: `class Person:\n  def __init__(self, name):\n    self.name = name`, expected: "John"
+                    },
+                    {
+                        id: "6.4", title: "Object Methods", desc: "Behaviors",
+                        content: `<h1>Methods</h1><div class="prose"><p>Objects can also contain methods. Methods in objects are functions that belong to the object.</p><h3>Task</h3><p>Add a <code>hello</code> method to Person that prints "Hello". Call it.</p></div>`,
+                        defaultCode: ``, validation: (out) => out.includes("Hello")
+                    },
+                    {
+                        id: "6.5", title: "Inheritance", desc: "Parent & Child",
+                        content: `<h1>Inheritance</h1><div class="prose"><p>Inheritance allows us to define a class that inherits all the methods and properties from another class.</p><h3>Task</h3><p>Create class <code>Student</code> that passes <code>Person</code>. Create object and print name.</p></div>`,
+                        defaultCode: `class Person:\n  name="John"`, expected: "John"
+                    }
+                ]
             },
-            strings: {
-                title: "Python Strings",
-                explanation: `<p>Strings in python are surrounded by either single quotation marks, or double quotation marks.</p><p>You can get the character at a specific position (indexing) by referring to the index number inside square brackets <code>[]</code>.</p>`,
-                code: `a = "Hello, World!"\nprint(a[1]) # prints 'e'`
+            // MODULE 7: CHALLENGES
+            {
+                id: "mod7", title: "Module 7: Algorithmic Challenges", lessons: [
+                    {
+                        id: "7.1", title: "Reverse String", desc: "Algorithm #1",
+                        content: `<h1>Reverse It</h1><div class="prose"><p>Write a function that accepts a string and returns it backwards.</p><h3>Task</h3><p>Reverse "Python". Output should be "nohtyP".</p></div>`,
+                        defaultCode: `txt = "Python"[::-1]\nprint(txt)`, expected: "nohtyP"
+                    },
+                    {
+                        id: "7.2", title: "Palindrome Check", desc: "Algorithm #2",
+                        content: `<h1>Palindrome</h1><div class="prose"><p>A palindrome reads the same backwards as forwards (e.g., "madam").</p><h3>Task</h3><p>Check if "madam" is palindrome. Print True.</p></div>`,
+                        defaultCode: ``, expected: "True"
+                    },
+                    {
+                        id: "7.3", title: "FizzBuzz", desc: "Classic Interview",
+                        content: `<h1>FizzBuzz</h1><div class="prose"><p>Print numbers 1 to 5. If divisible by 3 print "Fizz".</p><h3>Task</h3><p>Print: 1, 2, Fizz, 4, 5 (on new lines).</p></div>`,
+                        defaultCode: ``, validation: (out) => out.includes("Fizz") && out.includes("5")
+                    },
+                    {
+                        id: "7.4", title: "Find Max", desc: "Logic Check",
+                        content: `<h1>Max Number</h1><div class="prose"><p>Find the largest number in <code>[4, 8, 1, 10]</code> without using max().</p><h3>Task</h3><p>Print 10.</p></div>`,
+                        defaultCode: `nums = [4, 8, 1, 10]`, expected: "10"
+                    }
+                ]
             },
-            ifelse: {
-                title: "Python If...Else",
-                explanation: `<p>Python supports the usual logical conditions from mathematics: Equals (<code>a == b</code>), Not Equals (<code>a != b</code>), Less than (<code>a < b</code>), etc.</p><p>These conditions can be used in several ways, most commonly in "if statements" and loops. An "if statement" is written by using the <code>if</code> keyword.</p>`,
-                code: `a = 200\nb = 33\nif b > a:\n  print("b is greater than a")\nelif a == b:\n  print("a and b are equal")\nelse:\n  print("a is greater than b")`
+            // MODULE 8: DATA SCIENCE INTRO
+            {
+                id: "mod8", title: "Module 8: Data Science Prep", lessons: [
+                    {
+                        id: "8.1", title: "Matrix Logic", desc: "Nested Lists",
+                        content: `<h1>Matrices</h1><div class="prose"><p>Before NumPy, we use nested lists.</p><h3>Task</h3><p>Access the number 5 from <code>m = [[1,2,3], [4,5,6]]</code>.</p></div>`,
+                        defaultCode: `m = [[1,2,3], [4,5,6]]`, expected: "5"
+                    },
+                    {
+                        id: "8.2", title: "Filtering Data", desc: "Data Cleaning Logic",
+                        content: `<h1>Filtering</h1><div class="prose"><p>Filter out values less than 10 from <code>[5, 12, 18, 3]</code>.</p><h3>Task</h3><p>Print the filtered list.</p></div>`,
+                        defaultCode: `data = [5, 12, 18, 3]`, expected: "[12, 18]"
+                    },
+                    {
+                        id: "8.3", title: "Mapping Data", desc: "Transformation",
+                        content: `<h1>Mapping</h1><div class="prose"><p>Multiply every number in <code>[1, 2, 3]</code> by 2.</p><h3>Task</h3><p>Print <code>[2, 4, 6]</code>.</p></div>`,
+                        defaultCode: `nums = [1, 2, 3]`, expected: "[2, 4, 6]"
+                    },
+                    {
+                        id: "8.4", title: "Zip Function", desc: "Combining Datasets",
+                        content: `<h1>Zipping</h1><div class="prose"><p>Combine two lists index by index.</p><h3>Task</h3><p>Zip <code>['a', 'b']</code> and <code>[1, 2]</code>. Convert to list and print.</p></div>`,
+                        defaultCode: ``, expected: "[('a', 1), ('b', 2)]"
+                    }
+                ]
+            }
+        ];
+
+        /**
+         * ------------------------------------------------------------------
+         * APP STATE & CONTROLLERS
+         * ------------------------------------------------------------------
+         */
+        
+        // Simulating a Redux Store
+        const Store = {
+            currentLessonId: localStorage.getItem('last_lesson') || "1.1",
+            completedLessons: JSON.parse(localStorage.getItem('completed_lessons') || "[]"),
+            userCode: JSON.parse(localStorage.getItem('user_code') || "{}"), // Saves code per lesson
+            
+            saveProgress() {
+                localStorage.setItem('last_lesson', this.currentLessonId);
+                localStorage.setItem('completed_lessons', JSON.stringify(this.completedLessons));
+                localStorage.setItem('user_code', JSON.stringify(this.userCode));
+                UI.updateProgress();
             },
-            forloops: {
-                title: "Python For Loops",
-                explanation: `<p>A <code>for</code> loop is used for iterating over a sequence (that is either a list, a tuple, a dictionary, a set, or a string).</p><p>With the for loop we can execute a set of statements, once for each item in a list, tuple, set etc.</p>`,
-                code: `fruits = ["apple", "banana", "cherry"]\nfor x in fruits:\n  print(x)`
+
+            markComplete(id) {
+                if(!this.completedLessons.includes(id)) {
+                    this.completedLessons.push(id);
+                    this.saveProgress();
+                    return true;
+                }
+                return false;
             },
-            lists: {
-                title: "Python Lists",
-                explanation: `<p>Lists are used to store multiple items in a single variable. Lists are created using square brackets.</p><p>List items are ordered, changeable, and allow duplicate values.</p>`,
-                code: `my_list = ["apple", "banana", "cherry"]\nprint(my_list)\nprint(my_list[1]) # Access item by index`
+
+            saveCode(lessonId, code) {
+                this.userCode[lessonId] = code;
+                this.saveProgress();
             },
-            tuples: {
-                title: "Python Tuples",
-                explanation: `<p>A tuple is a collection which is <strong>ordered</strong> and <strong>unchangeable</strong>. In Python tuples are written with round brackets.</p><p>Once a tuple is created, you cannot change its values. Tuples are unchangeable, or immutable as it also is called.</p>`,
-                code: `my_tuple = ("apple", "banana", "cherry")\nprint(my_tuple)\nprint(my_tuple[0])`
+
+            getCode(lessonId, defaultCode) {
+                return this.userCode[lessonId] || defaultCode;
             },
-            dictionaries: {
-                title: "Python Dictionaries",
-                explanation: `<p>Dictionaries are used to store data values in <code>key:value</code> pairs. A dictionary is a collection which is ordered, changeable and does not allow duplicate keys.</p><p>Dictionaries are written with curly brackets <code>{}</code>.</p>`,
-                code: `thisdict = {\n  "brand": "Ford",\n  "model": "Mustang",\n  "year": 1964\n}\nprint(thisdict["model"])`
+
+            getLessonObj(id) {
+                for(let c of CURRICULUM) {
+                    let l = c.lessons.find(x => x.id === id);
+                    if(l) return l;
+                }
+                return CURRICULUM[0].lessons[0];
             },
-            functions: {
-                title: "Defining Functions",
-                explanation: `<p>A function is a block of code which only runs when it is called. You can pass data, known as parameters, into a function.</p><p>In Python, a function is defined using the <code>def</code> keyword.</p>`,
-                code: `def my_function():\n  print("Hello from a function")\n\nmy_function()`
+
+            getNextLesson(currentId) {
+                const all = CURRICULUM.flatMap(c => c.lessons);
+                const idx = all.findIndex(l => l.id === currentId);
+                return idx < all.length - 1 ? all[idx+1] : null;
             },
-            arguments: {
-                title: "Function Arguments",
-                explanation: `<p>Information can be passed into functions as arguments. Arguments are specified after the function name, inside the parentheses.</p><p>You can add as many arguments as you want, just separate them with a comma.</p>`,
-                code: `def my_function(fname):\n  print(fname + " Refsnes")\n\nmy_function("Emil")`
+
+            getPrevLesson(currentId) {
+                const all = CURRICULUM.flatMap(c => c.lessons);
+                const idx = all.findIndex(l => l.id === currentId);
+                return idx > 0 ? all[idx-1] : null;
             }
         };
 
-        const topicExplanationContainer = document.querySelector('.topic-explanation');
-        const codeInput = document.getElementById('code-input');
-        const runBtn = document.getElementById('run-btn');
-        const codeOutput = document.getElementById('code-output');
+        const UI = {
+            pyodide: null,
+            editor: null,
 
-        let pyodide;
-        
-        // --- PYODIDE INITIALIZATION ---
-        async function initializePyodide() {
-            try {
-                pyodide = await loadPyodide();
-                console.log("Pyodide is ready.");
-                runBtn.disabled = false;
-                runBtn.textContent = 'Run';
-                codeOutput.textContent = 'Python engine loaded. You can now run code.';
-            } catch (error) {
-                console.error("Pyodide loading failed:", error);
-                runBtn.textContent = 'Error Loading';
-                codeOutput.textContent = 'Failed to load the Python interpreter.';
-            }
-        }
-
-        initializePyodide();
-
-        // --- CORE FUNCTIONS ---
-        function loadTopicContent(topicKey) {
-            const topic = tutorialContent[topicKey];
-            if (!topic) return;
-
-            topicExplanationContainer.innerHTML = `<h2>${topic.title}</h2>${topic.explanation}`;
-            codeInput.value = topic.code;
-            document.getElementById('code-output').textContent = ''; // Clear output
-        }
-        
-        // --- EVENT LISTENERS ---
-
-        // Theme switcher
-        const themeSwitcher = document.getElementById('checkbox');
-        const doc = document.documentElement;
-
-        themeSwitcher.addEventListener('change', () => {
-            if (themeSwitcher.checked) {
-                doc.setAttribute('data-theme', 'dark');
-            } else {
-                doc.setAttribute('data-theme', 'light');
-            }
-        });
-
-        // Main Page Navigation (Home, Tutorial, etc.)
-        const navItems = document.querySelectorAll('.nav-item');
-        const pages = document.querySelectorAll('.page');
-
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
+            init() {
+                this.renderSidebar();
+                this.loadLesson(Store.currentLessonId);
+                this.updateProgress();
                 
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-
-                const targetId = item.getAttribute('href').substring(1);
-                pages.forEach(page => {
-                    page.classList.toggle('active', page.id === targetId);
+                // Sidebar Toggle logic could go here
+                
+                // Event Listeners
+                document.getElementById('run-btn').addEventListener('click', () => Runtime.execute());
+                document.getElementById('reset-btn').addEventListener('click', () => {
+                    const l = Store.getLessonObj(Store.currentLessonId);
+                    this.editor.setValue(l.defaultCode);
                 });
-            });
-        });
-        
-        // "Start Learning" button
-        const ctaButton = document.querySelector('.cta-button');
-        if(ctaButton){
-            ctaButton.addEventListener('click', () => {
-                document.querySelector('.nav-item[href="#tutorial"]').click();
-            });
-        }
-        
-        // Tutorial Side Navigation (Intro, Variables, etc.)
-        const topicLinks = document.querySelectorAll('.topic-link');
-        topicLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                topicLinks.forEach(l => l.classList.remove('active-topic'));
-                link.classList.add('active-topic');
-                const topicKey = link.dataset.topic;
-                loadTopicContent(topicKey);
-            });
-        });
+                document.getElementById('hint-btn').addEventListener('click', () => {
+                    const l = Store.getLessonObj(Store.currentLessonId);
+                    // Append solution as a comment
+                    const current = this.editor.getValue();
+                    this.editor.setValue(current + "\n\n# SOLUTION:\n" + l.solution);
+                });
+            },
 
-        // "Try it Yourself" Code Runner
-        if(runBtn) {
-            runBtn.addEventListener('click', async () => {
-                if (!pyodide) {
-                    codeOutput.textContent = "Python interpreter is not ready.";
-                    return;
-                }
-                const pythonCode = codeInput.value;
-                codeOutput.textContent = "Running...";
-                try {
-                    // Redirect stdout to capture print statements
-                    pyodide.globals.set("stdout_capture", "");
-                    await pyodide.runPythonAsync(`
-                        import sys
-                        import io
-                        sys.stdout = io.StringIO()
-                    `);
-
-                    let result = await pyodide.runPythonAsync(pythonCode);
-                    let stdout = pyodide.runPython("sys.stdout.getvalue()");
+            renderSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                let html = '';
+                
+                CURRICULUM.forEach(chapter => {
+                    html += `<div class="chapter-group">
+                                <div class="chapter-title">${chapter.title}</div>
+                                <ul class="lesson-list">`;
                     
-                    let output = stdout;
-                    if (result !== undefined) {
-                        output += `\n(Return value: ${result})`;
+                    chapter.lessons.forEach(lesson => {
+                        const isDone = Store.completedLessons.includes(lesson.id);
+                        const isActive = Store.currentLessonId === lesson.id;
+                        
+                        html += `<li class="lesson-item ${isActive ? 'active' : ''} ${isDone ? 'completed' : ''}" 
+                                     onclick="UI.loadLesson('${lesson.id}')">
+                                    <span>${lesson.id} ${lesson.title}</span>
+                                    <i class="fas ${isDone ? 'fa-check-circle' : 'fa-circle'}"></i>
+                                 </li>`;
+                    });
+                    
+                    html += `</ul></div>`;
+                });
+                sidebar.innerHTML = html;
+            },
+
+            loadLesson(id) {
+                Store.currentLessonId = id;
+                Store.saveProgress();
+                
+                const lesson = Store.getLessonObj(id);
+                
+                // Render Content
+                const contentDiv = document.getElementById('lesson-view');
+                contentDiv.innerHTML = `
+                    <div class="lesson-header">
+                        <div class="lesson-meta">
+                            <span class="badge">PYTHON</span>
+                            <span>${lesson.desc}</span>
+                        </div>
+                        <h1>${lesson.title}</h1>
+                    </div>
+                    ${lesson.content}
+                `;
+
+                // Update Editor
+                if(this.editor) {
+                    const savedCode = Store.getCode(id, lesson.defaultCode);
+                    this.editor.setValue(savedCode);
+                }
+
+                // Update Nav Buttons
+                const next = Store.getNextLesson(id);
+                const prev = Store.getPrevLesson(id);
+                
+                const nextBtn = document.getElementById('next-btn');
+                const prevBtn = document.getElementById('prev-btn');
+
+                if(next) {
+                    nextBtn.style.visibility = 'visible';
+                    nextBtn.onclick = () => UI.loadLesson(next.id);
+                } else {
+                    nextBtn.style.visibility = 'hidden';
+                }
+
+                if(prev) {
+                    prevBtn.style.visibility = 'visible';
+                    prevBtn.onclick = () => UI.loadLesson(prev.id);
+                } else {
+                    prevBtn.style.visibility = 'hidden';
+                }
+
+                this.clearTerminal();
+                this.renderSidebar(); // Update active state
+            },
+
+            updateProgress() {
+                const total = CURRICULUM.reduce((acc, c) => acc + c.lessons.length, 0);
+                const done = Store.completedLessons.length;
+                const pct = Math.round((done / total) * 100);
+                
+                document.getElementById('global-progress').style.width = `${pct}%`;
+                document.getElementById('progress-percent').innerText = `${pct}%`;
+            },
+
+            terminalLog(msg, type='log') {
+                const term = document.getElementById('terminal-output');
+                const line = document.createElement('div');
+                line.className = `t-${type}`;
+                line.innerText = msg;
+                term.appendChild(line);
+                term.scrollTop = term.scrollHeight;
+            },
+
+            clearTerminal() {
+                document.getElementById('terminal-output').innerHTML = '';
+            }
+        };
+
+        /**
+         * ------------------------------------------------------------------
+         * RUNTIME ENGINE (Pyodide Wrapper)
+         * ------------------------------------------------------------------
+         */
+        /**
+         * ------------------------------------------------------------------
+         * UPDATED RUNTIME ENGINE (Smarter Validation)
+         * ------------------------------------------------------------------
+         */
+        const Runtime = {
+            async init() {
+                try {
+                    UI.pyodide = await loadPyodide();
+                    UI.pyodide.setStdout({ batched: (msg) => UI.terminalLog(msg, 'log') });
+                    UI.pyodide.setStderr({ batched: (msg) => UI.terminalLog(msg, 'error') });
+                    document.getElementById('app-loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('app-loader').style.display = 'none', 500);
+                    document.getElementById('run-btn').disabled = false;
+                    UI.terminalLog("Python 3.11 Runtime Ready.", "system");
+                } catch (e) {
+                    console.error(e);
+                    document.querySelector('.spinner').style.borderColor = 'red';
+                    document.querySelector('h2').innerText = "Error Loading Python";
+                }
+            },
+
+            async execute() {
+                const code = UI.editor.getValue();
+                const lesson = Store.getLessonObj(Store.currentLessonId);
+                UI.clearTerminal();
+                UI.terminalLog("Running...", "system");
+                Store.saveCode(Store.currentLessonId, code);
+
+                try {
+                    let outputBuffer = "";
+                    UI.pyodide.setStdout({ batched: (msg) => {
+                        outputBuffer += msg + "\n";
+                        UI.terminalLog(msg, 'log');
+                    }});
+
+                    await UI.pyodide.runPythonAsync(code);
+
+                    // --- SMART VALIDATION LOGIC ---
+                    let passed = false;
+                    const cleanOutput = outputBuffer.trim();
+
+                    // 1. Custom Validation Function (Priority)
+                    if (lesson.validation) {
+                        passed = lesson.validation(cleanOutput, code);
+                    } 
+                    // 2. Expected Exact Match (Fallback)
+                    else if (lesson.expected) {
+                        // Normalize: remove extra spaces/newlines for comparison
+                        passed = cleanOutput.replace(/\s+/g, ' ').trim() === lesson.expected.replace(/\s+/g, ' ').trim();
                     }
 
-                    codeOutput.textContent = output.trim() || "(No output)";
+                    if(passed) {
+                        UI.terminalLog("\n✓ TEST PASSED! Excellent work.", "success");
+                        Store.markComplete(lesson.id);
+                        UI.updateProgress(); // Force update UI
+                    } else {
+                        UI.terminalLog("\n✗ Task incomplete.", "system");
+                        if(lesson.expected) {
+                            UI.terminalLog(`Expected output containing: "${lesson.expected}"`, "system");
+                        }
+                    }
+
                 } catch (err) {
-                    codeOutput.textContent = `Error: ${err.message}`;
+                    UI.terminalLog(err, 'error');
                 }
+            }
+        };
+        /**
+         * ------------------------------------------------------------------
+         * INITIALIZATION
+         * ------------------------------------------------------------------
+         */
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            UI.editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: "",
+                language: 'python',
+                theme: 'vs-dark',
+                fontSize: 14,
+                fontFamily: 'JetBrains Mono',
+                minimap: { enabled: false },
+                automaticLayout: true,
+                padding: { top: 16, bottom: 16 }
             });
-        }
 
+            // Initialize App once Editor is ready
+            UI.init();
+            Runtime.init();
+        });
 
-        // Quiz Submission
-        const submitQuizBtn = document.getElementById('submit-quiz');
-        if(submitQuizBtn){
-            submitQuizBtn.addEventListener('click', () => {
-                const results = document.getElementById('quiz-results');
-                let score = 0;
-                const answers = { q1: 'b', q2: 'c' };
-                const q1Answer = document.querySelector('input[name="q1"]:checked');
-                const q2Answer = document.querySelector('input[name="q2"]:checked');
-
-                if (q1Answer && q1Answer.value === answers.q1) score++;
-                if (q2Answer && q2Answer.value === answers.q2) score++;
-
-                results.innerHTML = `<h3>Your score: ${score} out of 2</h3>`;
-            });
-        }
-        
-        // --- INITIALIZATION ---
-        loadTopicContent('intro');
-
-    });
     </script>
 </body>
 </html>
